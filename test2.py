@@ -24,11 +24,13 @@ companyList = list()
 hrefList = list()
 gpaReqList = list()
 valueList = list()
+companyReviewList = list()
 
 def getLinks():
 
 	listURL = ("https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date","https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=10",
-		"https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=20")
+		"https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=20","https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=30",
+		"https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=40")
 
 	chrome_options = webdriver.ChromeOptions()
 	chrome_options.add_argument('--no-sandbox')
@@ -94,7 +96,7 @@ def parseJob(jobTuple,href):
 	info = jobTuple[2]
 
 #factors to add value
-	gpaTuple= ("GPA Requirement is", "GPA preferred", "GPA is", "GPA:", "GPA of", "GPA")
+	gpaTuple= ("GPA Requirement is", "GPA preferred", "GPA is", "GPA:", "GPA of", "GPA","GPA: Cumulative" )
 
 	titleTuple = ("intern","internship", "student", "co-op","college")
 
@@ -110,6 +112,7 @@ def parseJob(jobTuple,href):
 
 	for titleWord in titleTuple:
 		if titleWord in title.lower():
+			jobRating(company)
 
 			for gpaWord in gpaTuple:
 				if gpaWord.lower() in info.lower():
@@ -122,7 +125,10 @@ def parseJob(jobTuple,href):
 					try:
 						gpaReq = float(gpaBefore)
 					except:
-						gpaReq = float(gpaAfter)
+						try:
+							gpaReq = float(gpaAfter)
+						except:
+							continue
 
 
 					if myGPA >= gpaReq :
@@ -151,11 +157,29 @@ def parseJob(jobTuple,href):
 
 			break
 
-def createCSV(jobPositionList,companyList,hrefList,gpaReqList,valueList):
+def jobRating(company):
+	reviewURL = "https://www.indeed.com/cmp/"+company
+	reviewPage  = requests.get(reviewURL)
+	reviewContent =  reviewPage.content
+
+	reviewSoup = BeautifulSoup(reviewContent, "lxml")
+
+	try:
+		companyScore = reviewSoup.find(class_="cmp-header-rating-average").text
+	except:
+		companyScore = 0
+
+	companyReviewList.append(companyScore)
 
 
 
-	columnNames = ("Position","Company","URL","GPA Requirement","Value Score")
+
+
+def createCSV(jobPositionList,companyList,hrefList,gpaReqList,valueList,companyReviewList):
+
+
+
+	columnNames = ("Position","Company","URL","GPA Requirement","Value Score","Company Score")
 
 	fileName = "jobData.csv"
 
@@ -164,11 +188,11 @@ def createCSV(jobPositionList,companyList,hrefList,gpaReqList,valueList):
 			writer.writerow(columnNames)
 
 			for i in range (len(jobPositionList)-1):
-				dataField = (jobPositionList[i],companyList[i],hrefList[i],gpaReqList[i],valueList[i])
+				dataField = (jobPositionList[i],companyList[i],hrefList[i],gpaReqList[i],valueList[i],companyReviewList[i])
 				writer.writerow(dataField)
 
 getLinks()
-createCSV(jobPositionList,companyList,hrefList,gpaReqList,valueList)
+createCSV(jobPositionList,companyList,hrefList,gpaReqList,valueList,companyReviewList)
 
 
 exit()
