@@ -28,9 +28,9 @@ companyReviewList = list()
 
 def getLinks():
 
-	listURL = ("https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date","https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=10",
-		"https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=20","https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=30",
-		"https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=40")
+	listURL = ("https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date",
+		"https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=10","https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=20",
+		"https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=30","https://www.indeed.com/jobs?q=IT%20Intern&l=Philadelphia%2C%20PA&sort=date&start=40")
 
 	chrome_options = webdriver.ChromeOptions()
 	chrome_options.add_argument('--no-sandbox')
@@ -172,24 +172,43 @@ def jobRating(company):
 	companyReviewList.append(companyScore)
 
 
-
-
-
 def createCSV(jobPositionList,companyList,hrefList,gpaReqList,valueList,companyReviewList):
+
+	pathForCSV = os.getcwd() + "\\jobData.csv"
+
+	filedPosition = list()
+
+	fileName = "jobData.csv"
 
 
 
 	columnNames = ("Position","Company","URL","GPA Requirement","Value Score","Company Score")
 
-	fileName = "jobData.csv"
+	if os.path.exists(pathForCSV):
+		with open(fileName) as file:
+			reader = csv.reader(file, delimiter=',')
+			for row in reader:
+				filedPosition.append(row[0])
+				print (row[0])
 
-	with open(fileName,'w') as file:
+		with open(fileName,'a') as file:
 			writer = csv.writer(file, delimiter=',', dialect='unix')
-			writer.writerow(columnNames)
 
 			for i in range (len(jobPositionList)-1):
-				dataField = (jobPositionList[i],companyList[i],hrefList[i],gpaReqList[i],valueList[i],companyReviewList[i])
-				writer.writerow(dataField)
+
+				if not (jobPositionList[i] in filedPosition):
+					dataField = (jobPositionList[i],companyList[i],hrefList[i],gpaReqList[i],valueList[i],companyReviewList[i])
+					writer.writerow(dataField)
+
+
+	else:
+		with open(fileName,'w') as file:
+				writer = csv.writer(file, delimiter=',', dialect='unix')
+				writer.writerow(columnNames)
+
+				for i in range (len(jobPositionList)-1):
+					dataField = (jobPositionList[i],companyList[i],hrefList[i],gpaReqList[i],valueList[i],companyReviewList[i])
+					writer.writerow(dataField)
 
 getLinks()
 createCSV(jobPositionList,companyList,hrefList,gpaReqList,valueList,companyReviewList)
