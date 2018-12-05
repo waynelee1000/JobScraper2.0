@@ -1,4 +1,4 @@
-#base imports 
+#base imports
 import os
 import re
 import csv
@@ -34,7 +34,7 @@ def getLinks():
 
 	chrome_options = webdriver.ChromeOptions()
 	chrome_options.add_argument('--no-sandbox')
-	chrome_options.add_argument('--disable-gpu')
+	#chrome_options.add_argument('--disable-gpu')
 	chrome_options.add_argument('--headless')
 
 	driver = webdriver.Chrome(chrome_options=chrome_options)
@@ -46,7 +46,7 @@ def getLinks():
 		driver.get(baseURL)
 
 		divs =  driver.find_elements_by_tag_name('div')
-	
+
 		for info in divs:
 			x = info.get_attribute("data-tn-component")
 			if x == "organicJob":
@@ -60,7 +60,7 @@ def getLinks():
 				print (count)
 				print(" ")
 				"""
-	
+
 	driver.quit()
 
 
@@ -72,18 +72,29 @@ def contentSummary(href):
 
 	jobDescript = soup.title.text
 
+	print(soup)
+	print("---------------------------------------------------------------------------------------")
 
 	try:
-		company = soup.find(class_="company").text
-	except:
 		company = soup.find(class_="icl-u-lg-mr--sm icl-u-xs-mr--xs").text
+	except:
+		try:
+			company = soup.find(class_="company").text
+		except:
+			company = "N/A"
+
+
 
 
 	try:
 		info = soup.find(class_="jobsearch-JobComponent-description icl-u-xs-mt--md").text
 
 	except:
-		info = soup.find(class_="summary").text
+		try:
+			info = soup.find(class_="summary").text
+		except:
+			info = "N/A"
+
 
 	jobTuple = (jobDescript,company,info)
 
@@ -107,7 +118,7 @@ def parseJob(jobTuple,href):
 
 	value = 0
 
-	myGPA = float (3.0)
+	myGPA = float (3.3)
 	gpaReq = float (0)
 
 	for titleWord in titleTuple:
